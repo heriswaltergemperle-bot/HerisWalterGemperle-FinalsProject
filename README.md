@@ -25,7 +25,7 @@ Then visit http://localhost:8000.
 ```
 index.html          page structure and content
 style.css           design system and layout (Swiss style: white, ink, one orange accent)
-script.js           sticky header, nav underline, mobile menu, skills slider, hero parallax, scroll reveals, project image moment
+script.js           sticky header, nav underline, mobile menu, skills slider, hero parallax, scroll reveals, project window tilt, copy email, footer clock, optional sounds
 assets/             logo, hero portrait, TapKo screenshots, self-hosted Hanken Grotesk font
 ```
 

@@ -87,13 +87,21 @@
             <span class="line"><span>Gemperle</span></span>
           </h1>
           <p class="hero-statement">2nd year Computer Science student at Polytechnic College of Botolan, Zambales. Founder of TapKo, a smart card business.</p>
-          <a class="btn" href="#projects">
+          <a class="btn" href="#projects" data-magnet>
             <span>View My Projects</span>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h16M13 5l7 7-7 7"/></svg>
           </a>
         </div>
       </div>
     </section>
+
+    <!-- Tools ticker (decorative: the same skills are listed in the Skills section) -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <ul class="ticker-group"><li>Figma</li><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li><li>Java</li><li>ESP32</li><li>Blynk</li><li>Git</li><li>GitHub</li></ul>
+        <ul class="ticker-group"><li>Figma</li><li>HTML</li><li>CSS</li><li>JavaScript</li><li>Python</li><li>Java</li><li>ESP32</li><li>Blynk</li><li>Git</li><li>GitHub</li></ul>
+      </div>
+    </div>
 
     <!-- 01 Projects -->
     <section class="section container" id="projects" aria-labelledby="projects-title">
@@ -102,12 +110,15 @@
         <h2 id="projects-title">Projects</h2>
       </header>
 
+      <div class="project-frame">
+      <div class="frame-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="url">tapkoph.com</span></div>
       <a class="project-media" href="https://tapkoph.com" target="_blank" rel="noopener noreferrer" aria-label="TapKo website, opens in a new tab">
         <picture>
           <source media="(max-width: 767px)" srcset="assets/tapko-mobile.jpg">
           <img src="assets/tapko.jpg" width="1600" height="700" loading="lazy" alt="The TapKo website: the headline 'One tap, instantly connected.' beside a smart card and a customer's page on a phone">
         </picture>
       </a>
+      </div>
 
       <div class="project-caption">
         <h3>TapKo</h3>
@@ -171,11 +182,11 @@
       </div>
 
       <div class="skills-controls" aria-label="Skills navigation">
-        <span class="counter" aria-hidden="true">1/5</span>
-        <button class="ctl ctl-prev" type="button" aria-label="Previous skill">
+        <span class="counter" aria-hidden="true"><span class="counter-n">1</span>/5</span>
+        <button class="ctl ctl-prev" type="button" data-magnet aria-label="Previous skill">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M20 12H4m7-7-7 7 7 7"/></svg>
         </button>
-        <button class="ctl ctl-next" type="button" aria-label="Next skill">
+        <button class="ctl ctl-next" type="button" data-magnet aria-label="Next skill">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg>
         </button>
       </div>
@@ -189,6 +200,8 @@
         <h2 id="contact-title">Contact</h2>
       </header>
 
+      <div class="contact-wrap">
+      <span class="row-glide" aria-hidden="true"></span>
       <ul class="contact-list">
         <li>
           <a class="contact-row" href="mailto:heriswalterg@gmail.com">
@@ -196,6 +209,10 @@
             <span class="value">heriswalterg@gmail.com</span>
             <svg class="arrow" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
           </a>
+          <button class="copy-btn" type="button" data-copy="heriswalterg@gmail.com" aria-label="Copy email address">
+            <svg class="i-copy" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="9" y="9" width="11" height="11"/><path d="M5 15V5h10"/></svg>
+            <svg class="i-check" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" pathLength="1"/></svg>
+          </button>
         </li>
         <li>
           <a class="contact-row" href="https://tapkoph.com" target="_blank" rel="noopener noreferrer">
@@ -226,8 +243,11 @@
           </a>
         </li>
       </ul>
+      </div>
     </section>
   </main>
+
+  <div class="toast" role="status" aria-live="polite"></div>
 
   <footer class="site-footer">
     <div class="container footer-inner">
@@ -235,7 +255,11 @@
         <p class="footer-name">Heris Walter Gemperle</p>
         <p class="footer-role">Computer Science student, Polytechnic College of Botolan</p>
       </div>
-      <p class="footer-copy">© 2026</p>
+      <div class="footer-meta">
+        <p class="footer-time">Botolan, Zambales<span id="clock"></span></p>
+        <button class="sound-toggle" type="button" aria-pressed="false">Sound off</button>
+        <p class="footer-copy">© 2026</p>
+      </div>
     </div>
   </footer>
 

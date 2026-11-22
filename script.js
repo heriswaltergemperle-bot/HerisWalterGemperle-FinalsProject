@@ -4,6 +4,70 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  /* ---------- Hero statement: words arrive one by one ---------- */
+  const statement = $('.hero-statement');
+  if (!reduceMotion.matches) {
+    const words = statement.textContent.trim().split(/\s+/);
+    statement.textContent = '';
+    words.forEach((w, i) => {
+      const span = document.createElement('span');
+      span.className = 'w';
+      span.style.setProperty('--i', i);
+      span.textContent = w;
+      statement.append(span, i < words.length - 1 ? ' ' : '');
+    });
+  }
+  statement.classList.add('is-split');
+
+  /* ---------- Interface sounds: off until the visitor switches them on ---------- */
+  let soundOn = false;
+  try { soundOn = localStorage.getItem('sound') === 'on'; } catch (e) { /* storage blocked */ }
+  let audio = null;
+  function blip(freq = 620, dur = 0.07, vol = 0.05) {
+    if (!soundOn) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const t = audio.currentTime;
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + dur);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+    } catch (e) { /* audio unavailable */ }
+  }
+  const soundBtn = $('.sound-toggle');
+  function paintSound() {
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.textContent = soundOn ? 'Sound on' : 'Sound off';
+  }
+  paintSound();
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem('sound', soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ }
+    paintSound();
+    blip(740);
+  });
+  $$('.btn, .menu-btn').forEach((b) => b.addEventListener('pointerdown', () => blip(480, 0.05, 0.035)));
+
+  /* ---------- Magnetic buttons: drift toward the pointer, spring back ---------- */
+  if (fine.matches && !reduceMotion.matches) {
+    $$('[data-magnet]').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--tx', `${((e.clientX - (r.left + r.width / 2)) * 0.18).toFixed(1)}px`);
+        el.style.setProperty('--ty', `${((e.clientY - (r.top + r.height / 2)) * 0.28).toFixed(1)}px`);
+      });
+      el.addEventListener('pointerleave', () => { el.style.removeProperty('--tx'); el.style.removeProperty('--ty'); });
+    });
+  }
 
   /* ---------- Header: shrink and show a rule once the page scrolls ---------- */
   const header = $('.site-header');
@@ -126,7 +190,7 @@
   const slider = $('.slider');
   const slides = $$('.slide', slider);
   const segments = $$('.progress span', slider);
-  const counter = $('.counter');
+  const counterN = $('.counter-n');
   const live = $('#skills-live');
   let index = 0;
 
@@ -139,7 +203,13 @@
       s.setAttribute('aria-hidden', String(!on));
     });
     segments.forEach((s, k) => s.classList.toggle('is-on', k <= index));
-    counter.textContent = `${index + 1}/${slides.length}`;
+    counterN.textContent = String(index + 1);
+    if (!reduceMotion.matches) {
+      counterN.classList.remove('pop');
+      void counterN.offsetWidth; // restart the animation
+      counterN.classList.add('pop');
+    }
+    blip(index % 2 ? 520 : 640);
     live.textContent = `${$('.slide-title', slides[index]).textContent}, ${index + 1} of ${slides.length}`;
   }
   slides.forEach((s, k) => s.setAttribute('aria-hidden', String(k !== 0)));
@@ -148,6 +218,25 @@
   slider.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') { e.preventDefault(); show(index + 1, 'next'); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); show(index - 1, 'prev'); }
+  });
+
+  // spotlight follows the pointer
+  if (fine.matches) {
+    slider.addEventListener('pointermove', (e) => {
+      const r = slider.getBoundingClientRect();
+      slider.style.setProperty('--sx', `${e.clientX - r.left}px`);
+      slider.style.setProperty('--sy', `${e.clientY - r.top}px`);
+    });
+  }
+
+  // drag with a mouse
+  let dragX = null;
+  slider.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse') dragX = e.clientX; });
+  window.addEventListener('pointerup', (e) => {
+    if (dragX === null) return;
+    const dx = e.clientX - dragX;
+    dragX = null;
+    if (Math.abs(dx) > 60) show(index + (dx < 0 ? 1 : -1), dx < 0 ? 'next' : 'prev');
   });
 
   // swipe on touch screens
@@ -177,8 +266,79 @@
     });
   }
 
+  /* ---------- Project window: a gentle tilt with a glare that follows the pointer ---------- */
+  const projectFrame = $('.project-frame');
+  if (projectFrame && fine.matches && !reduceMotion.matches) {
+    projectFrame.addEventListener('pointermove', (e) => {
+      const r = projectFrame.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      projectFrame.style.setProperty('--ry', `${((x - 0.5) * 4).toFixed(2)}deg`);
+      projectFrame.style.setProperty('--rx', `${((0.5 - y) * 3).toFixed(2)}deg`);
+      projectFrame.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`);
+      projectFrame.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
+    });
+    projectFrame.addEventListener('pointerleave', () => { ['--rx', '--ry'].forEach((v) => projectFrame.style.removeProperty(v)); });
+  }
+
+  /* ---------- Contact: a highlight glides between rows ---------- */
+  const wrap = $('.contact-wrap');
+  const glide = $('.row-glide');
+  if (wrap && glide) {
+    $$('.contact-list li', wrap).forEach((li) => li.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      if (!glide.classList.contains('is-on')) { // first entry: appear in place instead of sliding in from the top
+        glide.style.transition = 'opacity 0.25s';
+        glide.style.height = `${li.offsetHeight}px`;
+        glide.style.transform = `translateY(${li.offsetTop}px)`;
+        void glide.offsetWidth;
+        glide.style.transition = '';
+      } else {
+        glide.style.height = `${li.offsetHeight}px`;
+        glide.style.transform = `translateY(${li.offsetTop}px)`;
+      }
+      glide.classList.add('is-on');
+    }));
+    wrap.addEventListener('pointerleave', () => glide.classList.remove('is-on'));
+  }
+
+  /* ---------- Copy email ---------- */
+  const toast = $('.toast');
+  let toastTimer;
+  function say(msg) {
+    toast.textContent = msg;
+    toast.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('is-on'), 2000);
+  }
+  $$('.copy-btn').forEach((btn) => btn.addEventListener('click', async () => {
+    const text = btn.dataset.copy;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+      const t = document.createElement('textarea'); // fallback for pages not served over https
+      t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+      document.body.append(t); t.select();
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      t.remove();
+    }
+    if (!ok) return say('Could not copy. Select the address instead.');
+    btn.classList.add('is-done');
+    say('Email copied');
+    blip(880, 0.09);
+    setTimeout(() => btn.classList.remove('is-done'), 1800);
+  }));
+
+  /* ---------- Footer clock: local time in Botolan ---------- */
+  const clock = $('#clock');
+  if (clock) {
+    const fmt = new Intl.DateTimeFormat('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' });
+    const paint = () => { clock.textContent = ` · ${fmt.format(new Date())}`; };
+    paint();
+    setInterval(paint, 20000);
+  }
+
   /* ---------- Moment: the TapKo screenshot develops as the Projects section arrives ---------- */
-  const media = $('.project-media');
+  const media = $('.project-frame');
   if (media && !reduceMotion.matches) {
     let queued = false;
     const develop = () => {
